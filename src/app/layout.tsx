@@ -22,8 +22,6 @@ export const metadata: Metadata = {
   description: "From Goal Tracking to Organizational Intelligence. Built for AtomQuest 1.0.",
 };
 
-import { SmoothScroll } from "@/components/layout/SmoothScroll";
-
 export default function RootLayout({
   children,
 }: Readonly<{
@@ -34,10 +32,8 @@ export default function RootLayout({
       lang="en"
       className={`${syne.variable} ${dmSans.variable} ${jetBrainsMono.variable} dark h-full antialiased`}
     >
-      <body className="min-h-full flex flex-col font-sans bg-background text-foreground bg-[url('/grain.png')] bg-blend-overlay">
-        <SmoothScroll>
-          {children}
-        </SmoothScroll>
+      <body className="min-h-full flex flex-col font-sans bg-background text-foreground">
+        {children}
       </body>
     </html>
   );
