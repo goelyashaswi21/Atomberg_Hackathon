@@ -51,5 +51,11 @@
     "ts-node": "^10.9.2",
     "tsx": "^4.22.1",
     "typescript": "^5"
+  },
+  "overrides": {
+    "react": "$react",
+    "react-dom": "$react-dom",
+    "@types/react": "$@types/react",
+    "@types/react-dom": "$@types/react-dom"
   }
 }
