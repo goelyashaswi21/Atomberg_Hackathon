@@ -1,15 +1,28 @@
 "use client";
-import { useState } from "react";
-import { Input } from "@/components/ui/input";
-import { Button } from "@/components/ui/button";
-import { calculateProgress, getProgressColor } from "@/lib/progress";
+  import { useState, useTransition } from "react";
+  import { Input } from "@/components/ui/input";
+  import { Button } from "@/components/ui/button";
+  import { calculateProgress, getProgressColor } from "@/lib/progress";
+  import { submitCheckIn } from "@/app/(dashboard)/goals/checkins/actions";
 
-export function CheckInModule({ goal }: { goal: any }) {
-  const [achievement, setAchievement] = useState<number>(0);
-  const [status, setStatus] = useState(goal.status || "ON_TRACK");
-  const [notes, setNotes] = useState("");
-  const progress = calculateProgress(goal.uom as any, goal.target, achievement);
-  const color = getProgressColor(progress);
+  export function CheckInModule({ goal }: { goal: any }) {
+    const [achievement, setAchievement] = useState<number>(0);
+    const [status, setStatus] = useState(goal.status || "ON_TRACK");
+    const [notes, setNotes] = useState("");
+    const [isPending, startTransition] = useTransition();
+    const progress = calculateProgress(goal.uom as any, goal.target, achievement);
+    const color = getProgressColor(progress);
+
+    const handleSubmit = () => {
+      startTransition(async () => {
+        try {
+          await submitCheckIn(goal.id, { achievement, status, notes });
+          alert("Check-in successfully recorded!");
+        } catch(e) {
+          alert("Failed to submit check-in");
+        }
+      });
+    };
 
   return (
     <div className="bg-secondary/40 border border-border-card rounded-2xl p-6 transition-all hover:border-border-active shadow-sm group">
@@ -70,7 +83,13 @@ export function CheckInModule({ goal }: { goal: any }) {
               </span>
             </div>
           </div>
-          <Button className="w-full mt-6 bg-primary text-primary-foreground hover:bg-accent-bright font-bold shadow-[0_0_15px_var(--accent-glow)] transition-all z-10" onClick={() => alert("Check-in submitted!")}>Submit Check-In</Button>
+          <Button 
+            disabled={isPending}
+            className="w-full mt-6 bg-primary text-primary-foreground hover:bg-accent-bright font-bold shadow-[0_0_15px_var(--accent-glow)] transition-all z-10 disabled:opacity-50" 
+            onClick={handleSubmit}
+          >
+            {isPending ? "Submitting..." : "Submit Check-In"}
+          </Button>
         </div>
       </div>
     </div>

@@ -8,6 +8,8 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { GoalHealthMeter } from "./GoalHealthMeter";
+import { useTransition } from "react";
+import { createGoal } from "@/app/(dashboard)/goals/actions";
 
 const GoalSchema = z.object({
   thrustArea: z.enum(['REVENUE','OPERATIONS','PEOPLE','CUSTOMER','INNOVATION','QUALITY']),
@@ -41,9 +43,17 @@ export function GoalWizard() {
   const weightage = watch("weightage") || 0;
   const currentTotal = baseWeightage + Number(weightage);
 
+  const [isPending, startTransition] = useTransition();
+
   const onSubmit = (data: GoalFormValues) => {
-    console.log("Submitting goal:", data);
-    alert("Goal Successfully Submitted!");
+    startTransition(async () => {
+      try {
+        await createGoal(data);
+      } catch (err) {
+        console.error(err);
+        alert("Action failed to persist, verify database connectivity.");
+      }
+    });
   };
 
   const nextStep = async () => {

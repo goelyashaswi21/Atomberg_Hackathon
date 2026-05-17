@@ -3,17 +3,33 @@ import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { useTransition } from "react";
+import { pushSharedGoal } from "./actions";
 
 export default function SharedGoalsPage() {
   const [target, setTarget] = useState("department");
-  const [syncing, setSyncing] = useState(false);
+  const [syncing, startTransition] = useTransition();
 
   const handlePush = () => {
-    setSyncing(true);
-    setTimeout(() => {
-      setSyncing(false);
-      alert("Goal successfully propagated to 14 employees!");
-    }, 1500);
+    startTransition(async () => {
+      try {
+        const titleInput = document.querySelector('input[placeholder="e.g. Q3 Company Revenue Target"]') as HTMLInputElement;
+        const targetInput = document.querySelector('input[placeholder="50"]') as HTMLInputElement;
+        
+        const count = await pushSharedGoal({
+          title: titleInput?.value || "Q3 Company Revenue Target",
+          target: targetInput?.value || 50,
+          thrustArea: "REVENUE",
+          kpiType: "QUANTITATIVE",
+          uom: "MAX",
+        });
+        alert(`Goal successfully propagated to ${count} employees!`);
+        if (titleInput) titleInput.value = "";
+        if (targetInput) targetInput.value = "";
+      } catch(err) {
+        alert("Action failed to persist.");
+      }
+    });
   }
 
   return (

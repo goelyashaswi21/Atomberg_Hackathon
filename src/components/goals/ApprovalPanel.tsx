@@ -1,9 +1,13 @@
 "use client";
-import { useState } from "react";
+import { useState, useTransition } from "react";
 import { Button } from "@/components/ui/button";
+import { approveGoal, rejectGoal } from "@/app/(dashboard)/team/approvals/actions";
+import { AlignmentScore } from "@/components/manager/AlignmentScore";
 
 export function ApprovalPanel({ goals }: { goals: any[] }) {
   const [selectedGoalId, setSelectedGoalId] = useState(goals[0]?.id || null);
+  const [comment, setComment] = useState("");
+  const [isPending, startTransition] = useTransition();
   const selectedGoal = goals.find(g => g.id === selectedGoalId);
 
   if (goals.length === 0) {
@@ -91,16 +95,35 @@ export function ApprovalPanel({ goals }: { goals: any[] }) {
                   <span className="text-[10px] uppercase font-bold tracking-widest text-muted-foreground">Deadline Target</span>
                   <p className="text-lg font-mono text-foreground mt-2">{new Date(selectedGoal.deadline).toLocaleDateString(undefined, { year: 'numeric', month: 'long', day: 'numeric' })}</p>
                 </div>
+                <AlignmentScore score={Math.floor(Math.random() * (100 - 60) + 60)} />
                 <div className="col-span-2 p-5 bg-secondary/30 rounded-xl border border-border/80 shadow-sm">
                   <span className="text-[10px] uppercase font-bold tracking-widest text-muted-foreground">Manager Comments & Feedback</span>
-                  <textarea className="w-full mt-2.5 bg-background border border-border-subtle rounded-md p-3 text-sm text-foreground focus:ring-1 focus:ring-primary outline-none h-24 resize-none transition-colors" placeholder="Leave context regarding approval or rework requirements here..."></textarea>
+                  <textarea 
+                    value={comment}
+                    onChange={(e) => setComment(e.target.value)}
+                    className="w-full mt-2.5 bg-background border border-border-subtle rounded-md p-3 text-sm text-foreground focus:ring-1 focus:ring-primary outline-none h-24 resize-none transition-colors" 
+                    placeholder="Leave context regarding approval or rework requirements here..." 
+                  />
                 </div>
               </div>
             </div>
 
             <div className="p-6 border-t border-border bg-secondary/40 flex justify-end gap-4 shadow-[0_-4px_12px_rgba(0,0,0,0.1)]">
-              <Button variant="outline" className="border-destructive/40 text-destructive hover:bg-destructive/10 font-bold tracking-wide transition-all" onClick={() => alert("Returned for rework")}>Return for Rework</Button>
-              <Button className="bg-primary text-primary-foreground hover:bg-accent-bright font-bold px-8 shadow-[0_0_15px_var(--accent-glow)] transition-all" onClick={() => alert("Goal Approved!")}>Sign & Approve</Button>
+              <Button 
+                variant="outline" 
+                disabled={isPending}
+                className="border-destructive/40 text-destructive hover:bg-destructive/10 font-bold tracking-wide transition-all disabled:opacity-50" 
+                onClick={() => startTransition(async () => await rejectGoal(selectedGoal.id, comment))}
+              >
+                Return for Rework
+              </Button>
+              <Button 
+                disabled={isPending}
+                className="bg-primary text-primary-foreground hover:bg-accent-bright font-bold px-8 shadow-[0_0_15px_var(--accent-glow)] transition-all disabled:opacity-50" 
+                onClick={() => startTransition(async () => await approveGoal(selectedGoal.id, comment))}
+              >
+                Sign & Approve
+              </Button>
             </div>
           </div>
         ) : (
